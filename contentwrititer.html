@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Writing AI Agent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .input-section, .output-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #4a5568;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        select, input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .output-content {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 200px;
+            border: 2px solid #e2e8f0;
+            font-family: 'Georgia', serif;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            font-style: italic;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .templates {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .template-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .template-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .template-card h3 {
+            color: #4a5568;
+            margin-bottom: 10px;
+        }
+
+        .template-card p {
+            color: #718096;
+            margin-bottom: 15px;
+        }
+
+        .template-btn {
+            background: linear-gradient(45deg, #48bb78, #38a169);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .template-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            color: white;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .copy-btn {
+            background: linear-gradient(45deg, #48bb78, #38a169);
+            margin-top: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .templates {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Content Writing AI Agent</h1>
+            <p>Your intelligent writing companion for creating compelling content</p>
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <h2 class="section-title">
+                    <span class="icon">✏️</span>
+                    Content Generator
+                </h2>
+                
+                <div class="form-group">
+                    <label for="contentType">Content Type</label>
+                    <select id="contentType">
+                        <option value="blog">Blog Post</option>
+                        <option value="social">Social Media Post</option>
+                        <option value="email">Email Newsletter</option>
+                        <option value="product">Product Description</option>
+                        <option value="ad">Advertisement Copy</option>
+                        <option value="press">Press Release</option>
+                        <option value="landing">Landing Page</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="topic">Topic/Subject</label>
+                    <input type="text" id="topic" placeholder="e.g., Sustainable Fashion Trends">
+                </div>
+
+                <div class="form-group">
+                    <label for="audience">Target Audience</label>
+                    <input type="text" id="audience" placeholder="e.g., Young professionals, Parents">
+                </div>
+
+                <div class="form-group">
+                    <label for="tone">Tone & Style</label>
+                    <select id="tone">
+                        <option value="professional">Professional</option>
+                        <option value="casual">Casual & Friendly</option>
+                        <option value="persuasive">Persuasive</option>
+                        <option value="informative">Informative</option>
+                        <option value="creative">Creative & Fun</option>
+                        <option value="authoritative">Authoritative</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="keywords">Keywords (optional)</label>
+                    <input type="text" id="keywords" placeholder="e.g., eco-friendly, sustainable, fashion">
+                </div>
+
+                <div class="form-group">
+                    <label for="length">Content Length</label>
+                    <select id="length">
+                        <option value="short">Short (100-200 words)</option>
+                        <option value="medium">Medium (300-500 words)</option>
+                        <option value="long">Long (600+ words)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="additionalInfo">Additional Information</label>
+                    <textarea id="additionalInfo" placeholder="Any specific requirements, key points to include, or style preferences..."></textarea>
+                </div>
+
+                <button class="btn" onclick="generateContent()">
+                    Generate Content
+                </button>
+            </div>
+
+            <div class="output-section">
+                <h2 class="section-title">
+                    <span class="icon">📝</span>
+                    Generated Content
+                </h2>
+                
+                <div class="loading" id="loading">
+                    🤖 AI is crafting your content... Please wait!
+                </div>
+                
+                <div class="output-content" id="output">
+                    Your generated content will appear here. Fill in the form and click "Generate Content" to get started!
+                </div>
+                
+                <button class="btn copy-btn" onclick="copyContent()">
+                    Copy Content
+                </button>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-number" id="contentCount">0</span>
+                <span class="stat-label">Content Generated</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="wordCount">0</span>
+                <span class="stat-label">Words Written</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="timesSaved">0</span>
+                <span class="stat-label">Hours Saved</span>
+            </div>
+        </div>
+
+        <div class="templates">
+            <div class="template-card">
+                <h3>🚀 Product Launch</h3>
+                <p>Create compelling copy for new product launches with engaging headlines and persuasive descriptions.</p>
+                <button class="template-btn" onclick="useTemplate('product-launch')">Use Template</button>
+            </div>
+            
+            <div class="template-card">
+                <h3>📱 Social Media Campaign</h3>
+                <p>Generate engaging social media posts that drive engagement and build brand awareness.</p>
+                <button class="template-btn" onclick="useTemplate('social-campaign')">Use Template</button>
+            </div>
+            
+            <div class="template-card">
+                <h3>📧 Email Marketing</h3>
+                <p>Craft compelling email newsletters that convert subscribers into customers.</p>
+                <button class="template-btn" onclick="useTemplate('email-marketing')">Use Template</button>
+            </div>
+            
+            <div class="template-card">
+                <h3>🎯 Landing Page</h3>
+                <p>Create high-converting landing page copy that captures leads and drives sales.</p>
+                <button class="template-btn" onclick="useTemplate('landing-page')">Use Template</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let stats = {
+            contentCount: 0,
+            wordCount: 0,
+            timesSaved: 0
+        };
+
+        function generateContent() {
+            const contentType = document.getElementById('contentType').value;
+            const topic = document.getElementById('topic').value;
+            const audience = document.getElementById('audience').value;
+            const tone = document.getElementById('tone').value;
+            const keywords = document.getElementById('keywords').value;
+            const length = document.getElementById('length').value;
+            const additionalInfo = document.getElementById('additionalInfo').value;
+
+            if (!topic.trim()) {
+                alert('Please enter a topic for your content!');
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            const output = document.getElementById('output');
+            const btn = document.querySelector('.btn');
+            
+            loading.classList.add('active');
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+
+            setTimeout(() => {
+                const content = generateAIContent(contentType, topic, audience, tone, keywords, length, additionalInfo);
+                
+                output.innerHTML = content;
+                loading.classList.remove('active');
+                btn.disabled = false;
+                btn.textContent = 'Generate Content';
+                
+                updateStats(content);
+            }, 2000 + Math.random() * 2000);
+        }
+
+        function generateAIContent(type, topic, audience, tone, keywords, length, additionalInfo) {
+            let content = '';
+            
+            switch(type) {
+                case 'blog':
+                    content = generateBlogPost(topic, audience, tone, keywords, additionalInfo);
+                    break;
+                case 'social':
+                    content = generateSocialPost(topic, audience, tone, keywords, additionalInfo);
+                    break;
+                case 'email':
+                    content = generateEmailContent(topic, audience, tone, keywords, additionalInfo);
+                    break;
+                case 'product':
+                    content = generateProductDescription(topic, audience, tone, keywords, additionalInfo);
+                    break;
+                case 'ad':
+                    content = generateAdCopy(topic, audience, tone, keywords, additionalInfo);
+                    break;
+                case 'press':
+                    content = generatePressRelease(topic, audience, tone, keywords, additionalInfo);
+                    break;
+                case 'landing':
+                    content = generateLandingPage(topic, audience, tone, keywords, additionalInfo);
+                    break;
+            }
+            
+            return content;
+        }
+
+        function generateBlogPost(topic, audience, tone, keywords, additionalInfo) {
+            const toneStyles = {
+                'professional': 'authoritative and well-researched',
+                'casual': 'conversational and relatable',
+                'persuasive': 'compelling and action-oriented',
+                'informative': 'educational and comprehensive',
+                'creative': 'engaging and imaginative',
+                'authoritative': 'expert-level and confident'
+            };
+
+            return `# ${topic}: A Comprehensive Guide
+
+## Introduction
+
+${topic} has become increasingly important for ${audience || 'modern consumers'}. In this ${toneStyles[tone]} guide, we'll explore the key aspects that matter most to your success.
+
+## Key Points to Consider
+
+### 1. Understanding the Fundamentals
+The foundation of ${topic} lies in understanding your audience's needs. ${audience ? `For ${audience}, this means` : 'This means'} focusing on practical solutions that deliver real value.
+
+### 2. Best Practices and Strategies
+${keywords ? `Key areas to focus on include: ${keywords}.` : 'Several proven strategies can help you achieve better results.'} Implementation requires careful planning and consistent execution.
+
+### 3. Common Challenges and Solutions
+Most people face similar obstacles when dealing with ${topic}. By addressing these challenges proactively, you can avoid common pitfalls and achieve better outcomes.
+
+## Practical Implementation
+
+${additionalInfo ? `Based on your specific requirements: ${additionalInfo}` : 'Here are actionable steps you can take today:'}
+
+- Start with small, manageable changes
+- Monitor your progress regularly
+- Adjust your approach based on results
+- Stay consistent with your efforts
+
+## Conclusion
+
+${topic} offers significant opportunities for ${audience || 'those willing to invest the time and effort'}. By following these guidelines and maintaining a ${tone} approach, you'll be well-positioned for success.
+
+**Ready to get started?** Take the first step today and begin implementing these strategies in your own journey with ${topic}.
+
+---
+*This content was generated by your AI Writing Assistant to match your specific requirements and target audience.*`;
+        }
+
+        function generateSocialPost(topic, audience, tone, keywords, additionalInfo) {
+            const emojis = ['🚀', '✨', '💡', '🎯', '💪', '🌟', '🔥', '💯'];
+            const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+            
+            return `${randomEmoji} ${topic} - Game Changer Alert! ${randomEmoji}
+
+${audience ? `Attention ${audience}!` : 'Hey everyone!'} This is exactly what you've been looking for.
+
+${additionalInfo || 'Here\'s what makes this special:'}
+
+${keywords ? `✅ Key benefits: ${keywords}` : '✅ Proven results'}
+✅ Easy to implement
+✅ Perfect for your lifestyle
+
+${tone === 'professional' ? 'Ready to elevate your approach?' : 'Who\'s ready to level up?'} 
+
+Drop a ${randomEmoji} in the comments if you're in!
+
+#${topic.replace(/\s+/g, '')} #Success #Growth #Motivation ${keywords ? keywords.split(',').map(k => '#' + k.trim().replace(/\s+/g, '')).join(' ') : ''}`;
+        }
+
+        function generateEmailContent(topic, audience, tone, keywords, additionalInfo) {
+            return `Subject: ${topic} - Don't Miss Out on This Opportunity!
+
+Dear ${audience || 'Valued Subscriber'},
+
+I hope this email finds you well. I'm excited to share something special with you today about ${topic}.
+
+${tone === 'professional' ? 'Our research indicates' : 'I\'ve discovered'} that ${topic} is becoming increasingly important for ${audience || 'people like you'}. 
+
+Here's what you need to know:
+
+🎯 **What's New:** ${additionalInfo || 'Latest developments in this space'}
+🎯 **Why It Matters:** Direct impact on your success
+🎯 **Key Benefits:** ${keywords || 'Improved results and efficiency'}
+
+**Special Offer:** 
+${tone === 'persuasive' ? 'For a limited time only' : 'As a valued subscriber'}, you get exclusive access to our premium resources.
+
+**What You Should Do Next:**
+1. Review the key information above
+2. Consider how this applies to your situation
+3. Take action while the opportunity is available
+
+Don't let this opportunity pass you by. ${audience || 'People'} who act quickly on ${topic} consistently see better results.
+
+Best regards,
+Your AI Writing Assistant
+
+P.S. Questions? Simply reply to this email - we're here to help!
+
+---
+*This email was crafted specifically for your ${audience || 'target audience'} using advanced AI content generation.*`;
+        }
+
+        function generateProductDescription(topic, audience, tone, keywords, additionalInfo) {
+            return `# ${topic}
+
+**Perfect for ${audience || 'discerning customers'} who demand quality and performance.**
+
+## Product Overview
+${topic} represents the perfect blend of innovation and practicality. Designed specifically with ${audience || 'your needs'} in mind, this solution delivers exceptional value.
+
+## Key Features
+${keywords ? keywords.split(',').map(k => `• **${k.trim()}:** Industry-leading performance`).join('\n') : '• Premium quality materials\n• Exceptional durability\n• User-friendly design'}
+
+## Benefits You'll Love
+✅ **Immediate Results:** See the difference from day one
+✅ **Long-term Value:** Built to last and perform
+✅ **Perfect Fit:** Designed for ${audience || 'your lifestyle'}
+✅ **Satisfaction Guaranteed:** We stand behind our product
+
+## Why Choose ${topic}?
+${additionalInfo || 'Our commitment to excellence means you get more than just a product - you get a solution that works.'}
+
+**Customer Testimonial:**
+"${topic} exceeded my expectations. As ${audience || 'someone who values quality'}, I can confidently recommend this to anyone looking for ${tone === 'professional' ? 'superior performance' : 'amazing results'}."
+
+## Order Now
+Don't wait - experience the difference that ${topic} can make. ${tone === 'persuasive' ? 'Limited time offer' : 'Available now'} with fast, secure delivery.
+
+**Free shipping on orders over $50**
+
+---
+*Product description optimized for ${audience || 'your target market'} with ${tone} tone.*`;
+        }
+
+        function generateAdCopy(topic, audience, tone, keywords, additionalInfo) {
+            return `🎯 **HEADLINE:** ${topic} - The Solution ${audience || 'Everyone'} Has Been Waiting For!
+
+**The Problem:**
+${audience || 'People'} struggle with finding the right approach to ${topic}. Traditional methods fall short, leaving you frustrated and looking for better alternatives.
+
+**The Solution:**
+Introducing our revolutionary approach to ${topic}. ${additionalInfo || 'Scientifically proven and tested by thousands of satisfied customers.'}
+
+**What Makes This Different:**
+${keywords ? keywords.split(',').map(k => `✓ ${k.trim()}`).join('\n') : '✓ Proven results\n✓ Easy implementation\n✓ Money-back guarantee'}
+
+**Limited Time Offer:**
+${tone === 'persuasive' ? 'Act now and save 50%!' : 'Special pricing available for early adopters'}
+
+**Social Proof:**
+"This changed everything for me. As ${audience || 'someone who\'s tried everything'}, I can say this actually works!" - Sarah M., Verified Customer
+
+**Call to Action:**
+Don't let another day pass without the solution you need. Click below to secure your spot and join thousands who've already transformed their approach to ${topic}.
+
+[GET STARTED NOW] [LEARN MORE]
+
+**Risk-Free Guarantee:** Try it for 30 days. If you're not completely satisfied, get your money back.
+
+**Urgency:** Only 47 spots remaining at this special price!
+
+---
+*Ad copy optimized for ${audience || 'target audience'} conversion with ${tone} messaging.*`;
+        }
+
+        function generatePressRelease(topic, audience, tone, keywords, additionalInfo) {
+            const currentDate = new Date().toLocaleDateString();
+            
+            return `FOR IMMEDIATE RELEASE
+
+**${topic}: Major Development Announced**
+
+*${currentDate} - [City, State]*
+
+${additionalInfo || 'Local company announces significant breakthrough in ' + topic + ' sector.'} This development is expected to have major implications for ${audience || 'industry professionals'}.
+
+"We're excited to share this important update about ${topic}," said [Company Spokesperson]. "This represents a significant step forward for ${audience || 'our target market'} and demonstrates our commitment to innovation."
+
+**Key Highlights:**
+${keywords ? keywords.split(',').map(k => `• ${k.trim()}: Leading industry advancement`).join('\n') : '• Innovative approach to market challenges\n• Significant benefits for end users\n• Competitive advantage in the marketplace'}
+
+The announcement comes at a crucial time when ${audience || 'industry stakeholders'} are looking for new solutions to address ongoing challenges in the ${topic} space.
+
+**Industry Impact:**
+Experts predict this development will influence how ${audience || 'professionals'} approach ${topic} in the coming months. Early indicators suggest strong market reception and potential for widespread adoption.
+
+**About [Company Name]:**
+[Company Name] is a leading innovator in the ${topic} sector, dedicated to providing ${tone === 'professional' ? 'enterprise-grade solutions' : 'practical solutions'} for ${audience || 'clients worldwide'}.
+
+**Media Contact:**
+[Name]
+[Title]
+[Email]
+[Phone]
+
+**Note to editors:** High-resolution images and additional resources are available upon request.
+
+###
+
+---
+*Press release generated with ${tone} tone for ${audience || 'target media outlets'}.*`;
+        }
+
+        function generateLandingPage(topic, audience, tone, keywords, additionalInfo) {
+            return `# Transform Your Approach to ${topic} Starting Today
+
+## The Ultimate Solution for ${audience || 'Success-Minded Individuals'}
+
+**Are you tired of struggling with ${topic}?** You're not alone. Thousands of ${audience || 'people'} face the same challenges every day.
+
+### Here's What You're Missing:
+❌ Outdated approaches that don't work
+❌ Complicated systems that waste time
+❌ Solutions that promise big but deliver little
+
+### Here's What You Get Instead:
+✅ **Proven Results:** ${keywords || 'Tested and verified by real users'}
+✅ **Simple Implementation:** Get started in minutes, not months
+✅ **Ongoing Support:** We're with you every step of the way
+
+---
+
+## Why ${topic} Matters More Than Ever
+
+${additionalInfo || 'In today\'s fast-paced world, having the right approach to ' + topic + ' can make all the difference between success and struggle.'}
+
+### The Numbers Don't Lie:
+- **87%** of ${audience || 'successful people'} use proven ${topic} strategies
+- **3x faster** results compared to traditional methods
+- **90%** customer satisfaction rate
+
+---
+
+## What Our Customers Say:
+
+> *"This completely changed my perspective on ${topic}. The results speak for themselves."*
+> **- Jennifer K., ${audience || 'Professional'}**
+
+> *"I wish I had found this sooner. ${tone === 'professional' ? 'The ROI is incredible' : 'It\'s been a game-changer'}."*
+> **- Michael R., ${audience || 'Entrepreneur'}**
+
+---
+
+## Ready to Get Started?
+
+**Special Limited-Time Offer:**
+${tone === 'persuasive' ? 'Save 50% when you act now!' : 'Early bird pricing available for the next 48 hours'}
+
+### Choose Your Plan:
+
+**STARTER** - Perfect for beginners
+- Core ${topic} strategies
+- Email support
+- 30-day guarantee
+**$97** ~~$194~~
+
+**PROFESSIONAL** - Most popular choice
+- Everything in Starter
+- Advanced techniques
+- Priority support
+- Bonus resources
+**$197** ~~$394~~
+
+**ENTERPRISE** - For serious professionals
+- Everything in Professional
+- 1-on-1 coaching call
+- Custom implementation
+- Lifetime updates
+**$497** ~~$994~~
+
+[GET STARTED NOW - 50% OFF]
+
+**Risk-Free Guarantee:** Try it for 60 days. If you're not completely satisfied, get every penny back.
+
+**Secure Checkout** | **Money-Back Guarantee** | **24/7 Support**
+
+---
+
+*Landing page optimized for ${audience || 'target audience'} with ${tone} messaging and conversion focus.*`;
+        }
+
+        function updateStats(content) {
+            stats.contentCount++;
+            stats.wordCount += content.split(/\s+/).length;
+            stats.timesSaved = Math.floor(stats.contentCount * 2.5);
+            
+            document.getElementById('contentCount').textContent = stats.contentCount;
+            document.getElementById('wordCount').textContent = stats.wordCount.toLocaleString();
+            document.getElementById('timesSaved').textContent = stats.timesSaved;
+        }
+
+        function copyContent() {
+            const output = document.getElementById('output');
+            const content = output.textContent || output.innerText;
+            
+            if (content && content.trim() !== 'Your generated content will appear here. Fill in the form and click "Generate Content" to get started!') {
+                navigator.clipboard.writeText(content).then(() => {
+                    const btn = event.target;
+                    const originalText = btn.textContent;
+                    btn.textContent = 'Copied!';
+                    
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                    }, 2000);
+                });
+            } else {
+                alert('Please generate content first!');
+            }
+        }
+
+        function useTemplate(templateType) {
+            const templates = {
+                'product-launch': {
+                    contentType: 'product',
+                    topic: 'Revolutionary Smart Fitness Tracker',
+                    audience: 'Health-conscious professionals',
+                    tone: 'persuasive',
+                    keywords: 'fitness, health, technology, lifestyle',
+                    additionalInfo: 'Focus on unique features and health benefits'
+                },
+                'social-campaign': {
+                    contentType: 'social',
+                    topic: 'Summer Wellness Challenge',
+                    audience: 'Young adults',
+                    tone: 'casual',
+                    keywords: 'wellness, fitness, community, challenge',
+                    additionalInfo: 'Create engaging post with call-to-action for participation'
+                },
+                'email-marketing': {
+                    contentType: 'email',
+                    topic: 'Monthly Newsletter - Industry Updates',
+                    audience: 'Business professionals',
+                    tone: 'professional',
+                    keywords: 'updates, insights, networking, growth',
+                    additionalInfo: 'Include valuable industry insights and networking opportunities'
+                },
+                'landing-page': {
+                    contentType: 'landing',
+                    topic: 'Digital Marketing Masterclass',
+                    audience: 'Small business owners',
+                    tone: 'persuasive',
+                    keywords: 'marketing, growth, sales, success',
+                    additionalInfo: 'Focus on transformation and quick wins'
+                }
+            };
+
+            const template = templates[templateType];
+            if (template) {
+                document.getElementById('contentType').value = template.contentType;
+                document.getElementById('topic').value = template.topic;
+                document.getElementById('audience').value = template.audience;
+                document.getElementById('tone').value = template.tone;
+                document.getElementById('keywords').value = template.keywords;
+                document.getElementById('additionalInfo').value = template.additionalInfo;
+                
+                document.querySelector('.input-section').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('contentCount').textContent = stats.contentCount;
+            document.getElementById('wordCount').textContent = stats.wordCount;
+            document.getElementById('timesSaved').textContent = stats.timesSaved;
+        });
+    </script>
+</body>
+</html>
